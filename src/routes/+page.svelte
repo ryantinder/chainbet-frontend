@@ -5,7 +5,7 @@
 	import { getContract, zeroAddress } from "viem";
 	import { FUJI_TOKEN, SEP_TOKEN, bet_template } from "$lib/contract";
 	import { getAccount } from "@wagmi/core";
-
+    import GameCard from "../components/GameCard.svelte";
     $: activeWeek = 9;
 
     $: account = getAccount()
@@ -50,18 +50,12 @@
 
 <!-- <Header /> -->
 
-<main class="flex font-mont flex-col justify-center max-w-xl mx-auto px-2 lg:px-0">
-    <div class="font-bold mb-8 text-primary text-5xl text-center w-full">ChainBet</div>
-    <div class="mb-4 text-base">
+<main class="flex font-mont flex-col">
+    <!-- <div class="mb-4 text-base">
         You need {SEP_TOKEN.address} {'(Sepolia)'} or {FUJI_TOKEN.address} {'(Fuji)'} to bet. It is free to acquire
         through any block explorer via the {'drip()'} function.
-    </div>
+    </div> -->
     <div class="mb-16">
-        <div class="flex justify-between items-center pb-4">
-            <div class="text-3xl w-full font-bold border-b">
-                My Bets
-            </div>
-        </div>
         <div class="flex flex-col gap-2">
             {#if account}
                 {#each $bets as bet}
@@ -105,19 +99,15 @@
             {/if}
         <div>
     </div>
-    <div class="text-3xl font-bold border-b">
-        Find Games
-    </div>
-    <div>
-        <h1 class="font-mont font-bold">Weeks</h1>
-        <div class="flex flex-row flex-wrap gap-2">
-            {#each Array(10).fill(9).map((x, i) => x + i) as week}
-                <button on:click={() => activeWeek = week} class="font-mont font-bold text-white rounded-lg py-4 px-8 bg-primary">{week}</button>
+
+    <div class="bg-header py-3 my-shadow rounded-lg">
+        <div class="flex flex-row flex-wrap gap-3 p-2 justify-center">
+            {#each Array(18).fill(1).map((x, i) => x + i) as week}
+                <button on:click={() => activeWeek = week} class={`font-bold text-xl my-shadow text-navy rounded-lg py-2 w-[10%] ${activeWeek == week ? 'bg-yellow' : 'bg-notwhite'}`}>{`Week ${week}`}</button>
             {/each}
         </div>
     </div>
     <div class="mt-5">
-        <h1 class="font-mont font-bold">Week {activeWeek}</h1>
         <!-- {#if web3modal}
             <span class="flex justify-end ">
                 <button class="p-2 px-3 bg-white outline outline-2 --outline-offset-2 outline-primary hover:outline-0 hover:bg-primary hover:text-white rounded-md text-primary font-bold font-mono" 
@@ -131,23 +121,14 @@
             </span>
         {/if} -->
         <!-- {Object.keys(data.games.response)} -->
-        <div class="flex flex-col items-start justify-start gap-2">
-            {#if $games}
-                {#each $games.filter((x) => x.game.week == `Week ${activeWeek}`) as game}
-                    <button on:click={() => {
-                        goto(`/game/${game.game.id}`)
-                    }}
-                    class="p-2 w-full border text-left rounded-md hover:bg-gray"
-                    >                   
-                        <div class="font-semibold text-2xl">
-                                {game.teams.home.name} vs {game.teams.away.name}
-                        </div>
-                        <div>
-
-                        </div>
-                    </button>
-                {/each}
-            {/if}
+        <div class="justify-center">
+            <div class="flex flex-wrap items-start gap-3">
+                {#if $games}
+                    {#each $games.filter((x) => x.game.week == `Week ${activeWeek}`) as game}
+                        <GameCard {game}/>
+                    {/each}
+                {/if}
+            </div>
         </div>
     </div>
 </main>
