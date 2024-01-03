@@ -12,15 +12,15 @@
     <div class="flex justify-between items-center p-2 border border-b-2 border-x-0 border-t-0 border-darkblue">
         <!-- Score Away Team -->
         <div class="bg-red px-3 py-2 rounded-md my-shadow font-bold" >
-            {game.scores.away.total}
+            {game.scores.away.total ?? 0}
         </div>
         <!-- Time remaining -->
         <div>
-            {game.game.status.long}
+            {game.game.status.short == 'FT' ? 'Final' : game.game.date.time}
         </div>
         <!-- Score home team -->
         <div class="bg-red px-3 py-2 rounded-md my-shadow font-bold" >
-            {game.scores.home.total}
+            {game.scores.home.total ?? 0}
         </div>
     </div>
     <!-- Middle section, teams -->

@@ -6,7 +6,7 @@
 	import { FUJI_TOKEN, SEP_TOKEN, bet_template } from "$lib/contract";
 	import { getAccount } from "@wagmi/core";
     import GameCard from "../components/GameCard.svelte";
-    $: activeWeek = 9;
+    $: activeWeek = 18;
 
     $: account = getAccount()
 

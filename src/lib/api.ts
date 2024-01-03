@@ -7,6 +7,7 @@ export const fetchGames = async () : Promise<Game[]> => {
     // const res = await axios.get(res_url, { headers: { 'Content-Type': 'application/json', 'x-rapidapi-key': '0d7371b74cfe8afb33bf3dbc9abaa414', 'x-rapidapi-host': 'v1.american-football.api-sports.io' } })
     const res = await fetch(res_url, { headers: { 'x-rapidapi-key': '0d7371b74cfe8afb33bf3dbc9abaa414', 'x-rapidapi-host': 'v1.american-football.api-sports.io' } })
     // console.log(JSON.stringify(res.data, null, 2))
+    console.log(res)
     const json = (await res.json()).response as Game[]
     console.log(json)
     games.set(json)

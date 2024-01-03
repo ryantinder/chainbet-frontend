@@ -98,7 +98,7 @@
     <button class="text-2xl font-bold text-navy" on:click={() => goto('/')}>Games</button>
     <button class="text-2xl font-bold text-navy" on:click={() => goto('/my-bets')}>My Bets</button>
     {#if web3modal}
-        <button class="bg-yellow text-white text-2xl font-bold px-4 py-3 rounded-lg my-shadow" 
+        <button class="bg-yellow text-navy text-2xl font-bold px-4 py-3 rounded-lg my-shadow" 
         on:click={ async () => { web3modal?.openModal().then( () => { account = getAccount() }) } }>
             {#if account.address}
                 {truncateAddress(account.address)}
@@ -108,9 +108,8 @@
     </button>
     {/if}
 </div>
-<div class="bg-darkblue px-16 pt-4">
+<div class="bg-darkblue px-16 pt-4 pb-[100px] min-h-screen">
 
     <slot />
 </div>
-<div class="h-[200px]">&nbsp;</div>
 

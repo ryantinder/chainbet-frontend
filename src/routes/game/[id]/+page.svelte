@@ -14,6 +14,7 @@
 	import { writable } from "svelte/store";
 	import type { BetInfo, BetState, Game } from "$lib/interface.js";
 	import { FUJI_FACTORY, FUJI_TOKEN, SEP_FACTORY, SEP_TOKEN, bet_template } from "$lib/contract.js";
+	import BetCard from "../../../components/BetCard.svelte";
 
     export let data;
     let game: Game;
@@ -23,7 +24,9 @@
     $: margin = 0.5
     $: account = getAccount()
     $: ensName = "";
-
+    $: team1 = ""
+    $: team2 = ""
+    let dummy: BetState
 
     const unwatchAcct = watchAccount(async (acct) => {
         account = acct
@@ -142,6 +145,20 @@
         isMobile = window.innerWidth < 768;
         const _games = $games.length != 0 ? $games : await fetchGames();
         game = _games.find((x) => x.game.id.toString() == $page.params.id)!
+        team1 = game.teams.away.name.split(" ").pop()!
+        team2 = game.teams.home.name.split(" ").pop()!
+        dummy = {
+            matchId: game.game.id,
+            winner: true,
+            margin: 30,
+            wager: 5000000n,
+            coverAddr: getAccount().address!,
+            atsAddr: zeroAddress,
+            finished: false,
+            contractAddr: zeroAddress,
+            chainId: 0,
+            cover: true
+        }
     })
     onDestroy(() => {
         unwatchAcct()
@@ -152,30 +169,28 @@
 
 <!-- <Header /> -->
 
-<main class="flex font-mont flex-col justify-center max-w-xl mx-auto pt-20 gap-2 px-2 lg:px-0">
-    <span class="flex justify-between">
-        <a class="p-2 px-3 bg-white outline outline-2 --outline-offset-2 outline-primary hover:outline-0 hover:bg-primary hover:text-white rounded-md text-primary font-bold font-mont" 
-            href="/">
-            Back
-        </a>
-    </span>
+<main class="flex font-mont flex-col justify-center max-w-2xl mx-auto gap-2 px-2 lg:px-0">
     {#if game}
-    <div class="w-full py-6 px-16 flex gap-2 justify-center items-center bg-primary">
-        <div class="text-3xl font-bold text-white text-center ">{game.teams.home.name}</div>
-        <div class="text-xl text-white">vs</div>
-        <div class="text-3xl font-bold text-white text-center ">{game.teams.away.name}</div>
+    <div class="bg-header my-shadow rounded-lg flex gap-3 items-center justify-center px-2">
+            <!-- Helmet 1 -->
+            <div class="flex justify-center">
+                <img src={`/logos/${team1}.png`} alt="" class="object-contain w-1/2" />
+            </div>
+            <!-- Vs --> 
+            <div class="font-bold text-2xl text-white bg-navy px-2 py-px rounded ">
+                <div>VS</div>
+            </div>
+            <!-- Helmet 2 -->
+            <div class="flex justify-center">
+                <img src={`/logos/${team2}.png`} alt="" class="object-contain w-1/2" />
+            </div>
     </div>
-    <div class="w-full px-4 gap-3 py-4 flex flex-col justify text-black text-xl border-2 mb-3">
-        <div class="border-b font-semibold flex justify-between items-center">
-            <div>
-                Create Bet Slip
-            </div>
-            <div>
-                {">"}
-            </div>
+    <div class="text-navy gap-3 w-full flex flex-col p-3 bg-notwhite rounded-lg my-shadow items-center">
+        <div class="text-2xl font-bold">
+            Create Bet Slip
         </div>
-        <div class="flex justify-between items-center">
-            <div>
+        <div class="flex justify-between w-full items-center">
+            <div class="font-bold">
                 Select winner
             </div>
             <div>
@@ -185,23 +200,25 @@
                 </select>
             </div>
         </div> 
-        <div class="flex justify-between items-center">
-            <div>
-                by points:
+        <div class="flex justify-between items-center w-full">
+            <div class="font-bold">
+                By Points:
             </div>
             <div>
                 <input type="number" bind:value={margin} min="0.5" step="0.5" max="100" class="p-2 bg-gray text-left rounded-lg"/>
             </div>
         </div>
-        <div class="border-b mb-2 font-semibold">
-            I'm betting
+        <div class="flex justify-between items-center w-full">
+            <div class="font-bold">
+                I'm betting
+            </div>
+            <div class="flex gap-2">
+                <button on:click={() => cover = true}  class={`transition-all font-semibold py-2 px-4 outline-1 ${cover ? 'text-white bg-navy' : 'outline outline-navy bg-white hover:bg-gray'} rounded-lg`}>With Spread</button>
+                <button on:click={() => cover = false} class={`transition-all font-semibold py-2 px-4 outline-1 outline outline-navy ${cover ? 'bg-white hover:bg-gray' : 'text-black bg-yellow'} rounded-lg`}>Against Spread</button>
+            </div>
         </div>
-        <div class="flex justify-around">
-            <button on:click={() => cover = true} class={`transition-all py-2 px-4 ${cover ? 'text-white bg-primary' : 'outline outline-1 bg-white hover:bg-gray'} rounded-lg`}>With Spread</button>
-            <button on:click={() => cover = false} class={`transition-all py-2 px-4 ${cover ? 'outline outline-1 bg-white hover:bg-gray' : 'text-white bg-red'} rounded-lg`}>Against Spread</button>
-        </div>
-        <div class="flex justify-between items-center">
-            <div>
+        <div class="flex justify-between items-center w-full">
+            <div class="font-bold">
                 Wager amount:
             </div>
             <div>
@@ -217,32 +234,15 @@
                 Bet cashes if the { winner == 1 ? `${game.teams.home.name}` : `${game.teams.away.name}` } win at ALL {margin > 1 ? `, or lose by ${Math.ceil(margin - 1)} points or less.` : ""}
             {/if}
         </div>
-        <button on:click={() => { if(!walletClient) return; handleExecute($walletClient) }} class="transition-all bg-primary text-white mx-auto p-2 rounded-lg w-1/2 font-bold outline-1 outline-black hover:outline" >Submit Bet</button>
+        <button on:click={() => { if(!walletClient) return; handleExecute($walletClient) }} class="transition-all bg-red text-black mx-auto p-2 rounded-lg w-1/2 font-bold outline-1 outline-navy outline hover:outline-2" >Submit Bet</button>
     </div>
     <div class="text-3xl font-bold">
-        <div class="border-b mb-2">Available Bets</div>
-        <div class="flex flex-col gap-2">
+        <div class="bg-header text-navy my-shadow mb-2 rounded-lg p-3">Available Bets</div>
+        <div class="flex flex-wrap gap-2">
             {#each $bets as bet}
                 <!-- OPEN BETS -->
                 {#if (bet.coverAddr == zeroAddress || bet.atsAddr == zeroAddress) && !bet.finished }
-                    <div class={`flex font-semibold text-base py-2 px-4 border justify-between items-center`}>
-                        {#if bet.coverAddr == zeroAddress}
-                        <!-- Cover side available -->
-                            <div class="w-2/3">Bet that the { bet.winner ? game.teams.away.name : game.teams.home.name } win by { Math.floor(bet.margin / 10 + 1)} points or more.</div>
-                        {:else}
-                        <!-- ATS side available -->
-                            <div class="w-[60%]">Bet that the { bet.winner ? game.teams.home.name : game.teams.away.name } win AT ALL {bet.margin / 10 > 1 ? `, or lose by ${Math.ceil(bet.margin / 10 - 1)} points or less.` : ""}</div>
-                        {/if}
-                        <div class="flex w-[40%] justify-end items-center gap-4">
-                            <div class="font-bold text-3xl">${formatUnits(bet.wager, 6)}</div>
-                            {#if bet.coverAddr == account.address || bet.atsAddr == account.address}
-                                My bet
-                            {:else}
-                                {bet.chainId == 11155111 ? "Sepolia" : "Fuji"}
-                                <button on:click={() => {handleTakeBet($walletClient, bet)}} class="py-2 px-4 outline outline-1 bg-white hover:bg-gray rounded-md">Accept</button>
-                            {/if}
-                        </div>
-                    </div>
+                    <BetCard {bet} {game} />
                 {/if}
             {:else}
             <div class="font-semibold text-base">
@@ -252,7 +252,7 @@
         </div>
     </div>
     <div class="text-3xl font-bold">
-        <div class="border-b mb-2">Bets in play</div>
+        <div class="bg-header text-navy my-shadow mb-2 rounded-lg p-3">Bets in play</div>
         <div class="flex flex-col gap-2">
             {#each $bets as bet}
                 <!-- OPEN BETS -->
@@ -260,9 +260,7 @@
                 <div class="flex font-semibold  py-2 px-4 border justify-between items-center">
                     <div class="font-bold w-1/text-3xl">${formatUnits(bet.wager, 6)}</div>
                     <div class="flex flex-1 ml-4 flex-col text-base justify-between items-start">
-                        <!-- Cover side available -->
                             <div class="">{truncateAddress(bet.coverAddr)} has a { bet.winner ? game.teams.away.name : game.teams.home.name } win by { Math.floor(bet.margin / 10 + 1)} or more.</div>
-                        <!-- ATS side available -->
                             <div class="">{truncateAddress(bet.atsAddr)} has a { bet.winner ? game.teams.home.name : game.teams.away.name } win {bet.margin / 10 > 1 ? ` or loss by ${Math.ceil(bet.margin / 10 - 1)} or more.` : "."}</div>
                     </div>
                 </div>
